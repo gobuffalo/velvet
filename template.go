@@ -49,6 +49,10 @@ func (t *Template) Parse() error {
 
 // Exec the template using the content and return the results
 func (t *Template) Exec(ctx *Context) (string, error) {
+	err := t.Parse()
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
 	v := newEvalVisitor(t, ctx)
 	r := t.program.Accept(v)
 	switch rp := r.(type) {
@@ -61,4 +65,14 @@ func (t *Template) Exec(ctx *Context) (string, error) {
 	default:
 		return "", errors.WithStack(errors.Errorf("unsupport eval return format %T: %+v", r, r))
 	}
+}
+
+func (t *Template) Clone() *Template {
+	hm, _ := NewHelperMap()
+	hm.AddMany(t.Helpers.Helpers())
+	t2 := &Template{
+		Helpers: hm,
+		Input:   t.Input,
+	}
+	return t2
 }
