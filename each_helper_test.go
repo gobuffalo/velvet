@@ -2,6 +2,7 @@ package velvet_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/gobuffalo/velvet"
@@ -122,4 +123,21 @@ func Test_Each_Helper_Map_As(t *testing.T) {
 	for k, v := range data {
 		r.Contains(s, fmt.Sprintf("%s:%s", k, v))
 	}
+}
+
+func Test_Each_Helper_Map_Call_Key(t *testing.T) {
+	r := require.New(t)
+	ctx := velvet.NewContext()
+	data := map[string]string{
+		"a": "A",
+		"b": "B",
+	}
+	ctx.Set("letters", data)
+	input := `
+	{{letters.a}}|{{letters.b}}
+	`
+
+	s, err := velvet.Render(input, ctx)
+	r.NoError(err)
+	r.Equal("A|B", strings.TrimSpace(s))
 }

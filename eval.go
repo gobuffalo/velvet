@@ -147,6 +147,16 @@ func (ev *evalVisitor) VisitPath(node *ast.PathExpression) interface{} {
 				}
 				continue
 			}
+			if rv.Kind() == reflect.Map {
+				pv := reflect.ValueOf(p)
+				keys := rv.MapKeys()
+				for i := 0; i < len(keys); i++ {
+					k := keys[i]
+					if k.Interface() == pv.Interface() {
+						return rv.MapIndex(k).Interface()
+					}
+				}
+			}
 			f := rv.FieldByName(p)
 			v = f.Interface()
 		}
