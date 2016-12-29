@@ -147,7 +147,8 @@ func (ev *evalVisitor) VisitPath(node *ast.PathExpression) interface{} {
 				}
 				continue
 			}
-			if rv.Kind() == reflect.Map {
+			switch rv.Kind() {
+			case reflect.Map:
 				pv := reflect.ValueOf(p)
 				keys := rv.MapKeys()
 				for i := 0; i < len(keys); i++ {
@@ -156,9 +157,14 @@ func (ev *evalVisitor) VisitPath(node *ast.PathExpression) interface{} {
 						return rv.MapIndex(k).Interface()
 					}
 				}
+				return errors.WithStack(errors.Errorf("could not find value for %s [line %d:%d]", node.Original, node.Line, node.Pos))
+			case reflect.Ptr:
+				f := rv.Elem().FieldByName(p)
+				v = f.Interface()
+			default:
+				f := rv.FieldByName(p)
+				v = f.Interface()
 			}
-			f := rv.FieldByName(p)
-			v = f.Interface()
 		}
 	}
 	return v
