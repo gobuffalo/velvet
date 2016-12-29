@@ -4,11 +4,11 @@ Velvet is a templating package for Go. It bears a striking resemblance to "handl
 
 ## General Usage
 
-```html
+```handlebars
 <!-- some input -->
 <h1>{{ name }}</h1>
 <ul>
-  {{#each names}
+  {{#each names}}
     <li>{{ this }}</li>
   {{/each}}
 </ul>
@@ -31,3 +31,20 @@ s, _ := velvet.Render(input, ctx)
 </ul>
 ```
 
+## If statements
+
+```handlebars
+{{#if true }}
+  render this
+{{/if}}
+```
+
+### Else statements
+
+```handlebars
+{{#if false }}
+  won't render this
+{{ else }}
+  render this
+{{/if}}
+```
