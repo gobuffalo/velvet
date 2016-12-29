@@ -2,6 +2,7 @@ package velvet
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"reflect"
 	"strconv"
@@ -47,6 +48,10 @@ func (ev *evalVisitor) VisitProgram(p *ast.Program) interface{} {
 			out.WriteString(strconv.Itoa(vp))
 		case nil:
 		default:
+			if s, ok := value.(fmt.Stringer); ok {
+				out.WriteString(template.HTMLEscapeString(s.String()))
+				continue
+			}
 			return errors.WithStack(errors.Errorf("unsupport eval return format %T: %+v", value, value))
 		}
 
