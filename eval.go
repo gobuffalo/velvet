@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/aymerick/raymond/ast"
 	"github.com/pkg/errors"
@@ -40,6 +41,8 @@ func (ev *evalVisitor) VisitProgram(p *ast.Program) interface{} {
 			out.Write([]byte(vp))
 		case string:
 			out.WriteString(template.HTMLEscapeString(vp))
+		case []string:
+			out.WriteString(template.HTMLEscapeString(strings.Join(vp, " ")))
 		case int:
 			out.WriteString(strconv.Itoa(vp))
 		case nil:

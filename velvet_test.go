@@ -70,6 +70,16 @@ func Test_Render_with_Func(t *testing.T) {
 	r.Equal("Mark Bates", s)
 }
 
+func Test_Render_Array(t *testing.T) {
+	r := require.New(t)
+
+	ctx := velvet.NewContext()
+	ctx.Set("names", []string{"mark", "bates"})
+	s, err := velvet.Render("{{names}}", ctx)
+	r.NoError(err)
+	r.Equal("mark bates", s)
+}
+
 type user struct {
 	First string
 	Last  string
