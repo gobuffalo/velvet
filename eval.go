@@ -239,12 +239,12 @@ func (ev *evalVisitor) helperName(h string) string {
 	if h != "" {
 		bp := ev.blockParams.current
 		if len(bp) == 1 {
-			if t := ev.context.Get("this"); t != nil {
+			if t := ev.context.Get("@value"); t != nil {
 				ev.context.Set(bp[0], t)
 			}
 		}
 		if len(bp) >= 2 {
-			if t := ev.context.Get("this"); t != nil {
+			if t := ev.context.Get("@value"); t != nil {
 				ev.context.Set(bp[1], t)
 			}
 			for _, k := range []string{"@index", "@key"} {

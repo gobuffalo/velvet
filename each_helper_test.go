@@ -11,7 +11,7 @@ import (
 func Test_Each_Helper_NoArgs(t *testing.T) {
 	r := require.New(t)
 	ctx := velvet.NewContext()
-	input := `{{#each }}{{this}}{{/each}}`
+	input := `{{#each }}{{@value}}{{/each}}`
 
 	_, err := velvet.Render(input, ctx)
 	r.Error(err)
@@ -21,7 +21,7 @@ func Test_Each_Helper(t *testing.T) {
 	r := require.New(t)
 	ctx := velvet.NewContext()
 	ctx.Set("names", []string{"mark", "bates"})
-	input := `{{#each names }}<p>{{this}}</p>{{/each}}`
+	input := `{{#each names }}<p>{{@value}}</p>{{/each}}`
 
 	s, err := velvet.Render(input, ctx)
 	r.NoError(err)
@@ -92,7 +92,7 @@ func Test_Each_Helper_Map(t *testing.T) {
 	ctx.Set("letters", data)
 	input := `
 	{{#each letters}}
-		{{@key}}:{{this}}
+		{{@key}}:{{@value}}
 	{{/each}}
 	`
 

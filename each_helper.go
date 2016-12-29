@@ -19,7 +19,7 @@ func eachHelper(collection interface{}, help HelperContext) (template.HTML, erro
 			ctx.Set("@first", i == 0)
 			ctx.Set("@last", i == val.Len())
 			ctx.Set("@index", i)
-			ctx.Set("this", v)
+			ctx.Set("@value", v)
 			s, err := help.BlockWith(ctx)
 			if err != nil {
 				return "", errors.WithStack(err)
@@ -35,7 +35,7 @@ func eachHelper(collection interface{}, help HelperContext) (template.HTML, erro
 			ctx.Set("@first", i == 0)
 			ctx.Set("@last", i == len(keys))
 			ctx.Set("@key", key)
-			ctx.Set("this", v)
+			ctx.Set("@value", v)
 			s, err := help.BlockWith(ctx)
 			if err != nil {
 				return "", errors.WithStack(err)
