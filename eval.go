@@ -140,7 +140,8 @@ func (ev *evalVisitor) VisitPath(node *ast.PathExpression) interface{} {
 		v = ev.context.Get(h)
 	}
 	if v == nil {
-		return errors.WithStack(errors.Errorf("could not find value for %s [line %d:%d]", h, node.Line, node.Pos))
+		return ""
+		// 	return errors.WithStack(errors.Errorf("could not find value for %s [line %d:%d]", h, node.Line, node.Pos))
 	}
 
 	if len(node.Parts) > 1 {
