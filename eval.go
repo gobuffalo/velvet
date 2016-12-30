@@ -244,6 +244,10 @@ func (ev *evalVisitor) evalHelper(node *ast.Expression, helper interface{}) (ret
 	if last.Name() == "HelperContext" {
 		args = append(args, reflect.ValueOf(hargs))
 	}
+	if len(args) > rt.NumIn() {
+		err := errors.Errorf("Incorrect number of arguments being passed to %s (%d for %d)", node.Canonical(), len(args), rt.NumIn())
+		return errors.WithStack(err)
+	}
 	vv := rv.Call(args)
 
 	if len(vv) >= 1 {
