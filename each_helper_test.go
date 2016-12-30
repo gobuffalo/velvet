@@ -82,6 +82,32 @@ func Test_Each_Helper_As_Nested(t *testing.T) {
 	r.Contains(s, "Rachel: B")
 }
 
+func Test_Each_Helper_SlicePtr(t *testing.T) {
+	r := require.New(t)
+	type user struct {
+		Name string
+	}
+	type users []user
+
+	us := &users{
+		{Name: "Mark"},
+		{Name: "Rachel"},
+	}
+
+	ctx := velvet.NewContext()
+	ctx.Set("users", us)
+
+	input := `
+	{{#each users as |user|}}
+		{{user.Name}}
+	{{/each}}
+	`
+	s, err := velvet.Render(input, ctx)
+	r.NoError(err)
+	r.Contains(s, "Mark")
+	r.Contains(s, "Rachel")
+}
+
 func Test_Each_Helper_Map(t *testing.T) {
 	r := require.New(t)
 	ctx := velvet.NewContext()

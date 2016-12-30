@@ -11,6 +11,9 @@ import (
 func eachHelper(collection interface{}, help HelperContext) (template.HTML, error) {
 	out := bytes.Buffer{}
 	val := reflect.ValueOf(collection)
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
 	switch val.Kind() {
 	case reflect.Array, reflect.Slice:
 		for i := 0; i < val.Len(); i++ {
