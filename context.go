@@ -31,6 +31,11 @@ func (c *Context) Get(key string) interface{} {
 	return nil
 }
 
+// Has checks the existence of the key in the context.
+func (c *Context) Has(key string) bool {
+	return c.Get(key) != nil
+}
+
 // NewContext returns a fully formed context ready to go
 func NewContext() *Context {
 	return &Context{
