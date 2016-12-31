@@ -67,12 +67,14 @@ func (t *Template) Exec(ctx *Context) (string, error) {
 	}
 }
 
+// Clone a template. This is useful for defining helpers on per "instance" of the template.
 func (t *Template) Clone() *Template {
 	hm, _ := NewHelperMap()
 	hm.AddMany(t.Helpers.Helpers())
 	t2 := &Template{
 		Helpers: hm,
 		Input:   t.Input,
+		program: t.program,
 	}
 	return t2
 }

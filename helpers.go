@@ -96,6 +96,11 @@ func (h HelperContext) ElseBlockWith(ctx *Context) (string, error) {
 	}
 }
 
+// Get is a convienence method that calls the underlying Context.
+func (h HelperContext) Get(key string) interface{} {
+	return h.Context.Get(key)
+}
+
 // toJSONHelper converts an interface into a string.
 func toJSONHelper(v interface{}) (template.HTML, error) {
 	b, err := json.Marshal(v)
