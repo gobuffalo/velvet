@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/markbates/inflect"
@@ -27,6 +29,7 @@ func init() {
 	Helpers.Add("content_for", contentForHelper)
 	Helpers.Add("content_of", contentOfHelper)
 	Helpers.Add("markdown", markdownHelper)
+	Helpers.Add("len", lenHelper)
 	Helpers.Add("debug", debugHelper)
 	Helpers.AddMany(inflect.Helpers)
 }
@@ -108,6 +111,14 @@ func toJSONHelper(v interface{}) (template.HTML, error) {
 		return "", errors.WithStack(err)
 	}
 	return template.HTML(b), nil
+}
+
+func lenHelper(v interface{}) string {
+	rv := reflect.ValueOf(v)
+	if rv.Kind() == reflect.Ptr {
+		rv = rv.Elem()
+	}
+	return strconv.Itoa(rv.Len())
 }
 
 // Debug by verbosely printing out using 'pre' tags.
