@@ -199,6 +199,7 @@ func (ev *evalVisitor) VisitHash(node *ast.Hash) interface{} {
 	for _, h := range node.Pairs {
 		val := h.Accept(ev).(map[string]interface{})
 		for k, v := range val {
+			ev.context = ev.context.New()
 			ev.context.Set(k, v)
 		}
 	}
