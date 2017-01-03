@@ -21,6 +21,7 @@ func init() {
 	Helpers.Add("if", ifHelper)
 	Helpers.Add("unless", unlessHelper)
 	Helpers.Add("each", eachHelper)
+	Helpers.Add("eq", equalHelper)
 	Helpers.Add("json", toJSONHelper)
 	Helpers.Add("js_escape", template.JSEscapeString)
 	Helpers.Add("html_escape", template.HTMLEscapeString)
