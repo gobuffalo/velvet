@@ -196,13 +196,15 @@ func (ev *evalVisitor) VisitNumber(node *ast.NumberLiteral) interface{} {
 
 func (ev *evalVisitor) VisitHash(node *ast.Hash) interface{} {
 	// fmt.Println("VisitHash")
+	ctx := ev.context.New()
 	for _, h := range node.Pairs {
 		val := h.Accept(ev).(map[string]interface{})
 		for k, v := range val {
-			ev.context = ev.context.New()
-			ev.context.Set(k, v)
+			ctx.Set(k, v)
+			ctx.Options()[k] = v
 		}
 	}
+	ev.context = ctx
 	return nil
 }
 

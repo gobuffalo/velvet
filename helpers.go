@@ -100,6 +100,10 @@ func (h HelperContext) ElseBlockWith(ctx *Context) (string, error) {
 	}
 }
 
+func (h HelperContext) Helpers() *HelperMap {
+	return &h.evalVisitor.template.Helpers
+}
+
 // Get is a convienence method that calls the underlying Context.
 func (h HelperContext) Get(key string) interface{} {
 	return h.Context.Get(key)
