@@ -32,6 +32,7 @@ func init() {
 	Helpers.Add("markdown", markdownHelper)
 	Helpers.Add("len", lenHelper)
 	Helpers.Add("debug", debugHelper)
+	Helpers.Add("inspect", inspectHelper)
 	Helpers.AddMany(inflect.Helpers)
 }
 
@@ -129,4 +130,8 @@ func lenHelper(v interface{}) string {
 // Debug by verbosely printing out using 'pre' tags.
 func debugHelper(v interface{}) template.HTML {
 	return template.HTML(fmt.Sprintf("<pre>%+v</pre>", v))
+}
+
+func inspectHelper(v interface{}) string {
+	return fmt.Sprintf("%+v", v)
 }
