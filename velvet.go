@@ -1,11 +1,18 @@
 package velvet
 
-import "github.com/pkg/errors"
+import (
+	"sync"
+
+	"github.com/pkg/errors"
+)
 
 var cache = map[string]*Template{}
+var moot = &sync.Mutex{}
 
 // Parse an input string and return a Template.
 func Parse(input string) (*Template, error) {
+	moot.Lock()
+	defer moot.Unlock()
 	if t, ok := cache[input]; ok {
 		return t, nil
 	}
