@@ -33,7 +33,7 @@ func NewTemplate(input string) (*Template, error) {
 }
 
 // Parse the template this can be called many times
-// as a sucessful result is cached and is used on subsequent
+// as a successful result is cached and is used on subsequent
 // uses.
 func (t *Template) Parse() error {
 	if t.program != nil {
