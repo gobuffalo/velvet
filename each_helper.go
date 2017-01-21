@@ -14,6 +14,10 @@ func eachHelper(collection interface{}, help HelperContext) (template.HTML, erro
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
 	}
+	if val.Len() == 0 {
+		s, err := help.ElseBlock()
+		return template.HTML(s), err
+	}
 	switch val.Kind() {
 	case reflect.Array, reflect.Slice:
 		for i := 0; i < val.Len(); i++ {

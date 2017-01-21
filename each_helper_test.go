@@ -149,3 +149,21 @@ func Test_Each_Helper_Map_As(t *testing.T) {
 		r.Contains(s, fmt.Sprintf("%s:%s", k, v))
 	}
 }
+
+func Test_Each_Helper_Else(t *testing.T) {
+	r := require.New(t)
+	ctx := velvet.NewContext()
+	data := map[string]string{}
+	ctx.Set("letters", data)
+	input := `
+	{{#each letters as |k v|}}
+		{{k}}:{{v}}
+	{{else}}
+		no letters
+	{{/each}}
+	`
+
+	s, err := velvet.Render(input, ctx)
+	r.NoError(err)
+	r.Contains(s, "no letters")
+}
