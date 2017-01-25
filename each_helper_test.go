@@ -167,3 +167,44 @@ func Test_Each_Helper_Else(t *testing.T) {
 	r.NoError(err)
 	r.Contains(s, "no letters")
 }
+
+func Test_Each_Helper_Else_Collection(t *testing.T) {
+	r := require.New(t)
+	ctx := velvet.NewContext()
+	data := map[string][]string{}
+	ctx.Set("collection", data)
+
+	input := `
+	{{#each collection.emptykey as |k v|}}
+		{{k}}:{{v}}
+	{{else}}
+		no letters
+	{{/each}}
+	`
+
+	s, err := velvet.Render(input, ctx)
+	r.NoError(err)
+	r.Contains(s, "no letters")
+}
+
+func Test_Each_Helper_Else_CollectionMap(t *testing.T) {
+	r := require.New(t)
+	ctx := velvet.NewContext()
+	data := map[string]map[string]string{
+		"emptykey": map[string]string{},
+	}
+
+	ctx.Set("collection", data)
+
+	input := `
+	{{#each collection.emptykey.something as |k v|}}
+		{{k}}:{{v}}
+	{{else}}
+		no letters
+	{{/each}}
+	`
+
+	s, err := velvet.Render(input, ctx)
+	r.NoError(err)
+	r.Contains(s, "no letters")
+}

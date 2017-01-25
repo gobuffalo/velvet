@@ -14,7 +14,7 @@ func eachHelper(collection interface{}, help HelperContext) (template.HTML, erro
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
 	}
-	if val.Len() == 0 {
+	if val.Kind() == reflect.Struct || val.Len() == 0 {
 		s, err := help.ElseBlock()
 		return template.HTML(s), err
 	}
