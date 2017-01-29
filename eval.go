@@ -12,6 +12,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+// HTMLer generates HTML source
+type HTMLer interface {
+	HTML() template.HTML
+}
+
 var helperContextKind = reflect.ValueOf(HelperContext{}).Kind().String()
 var mapKind = reflect.ValueOf(map[string]interface{}{}).Kind().String()
 
@@ -43,18 +48,18 @@ func (ev *evalVisitor) VisitProgram(p *ast.Program) interface{} {
 			return vp
 		case template.HTML:
 			out.Write([]byte(vp))
+		case HTMLer:
+			out.Write([]byte(vp.HTML()))
 		case string:
 			out.WriteString(template.HTMLEscapeString(vp))
 		case []string:
 			out.WriteString(template.HTMLEscapeString(strings.Join(vp, " ")))
 		case int:
 			out.WriteString(strconv.Itoa(vp))
+		case fmt.Stringer:
+			out.WriteString(template.HTMLEscapeString(vp.String()))
 		case nil:
 		default:
-			if s, ok := value.(fmt.Stringer); ok {
-				out.WriteString(template.HTMLEscapeString(s.String()))
-				continue
-			}
 			return errors.WithStack(errors.Errorf("unsupport eval return format %T: %+v", value, value))
 		}
 
