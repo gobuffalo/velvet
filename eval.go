@@ -41,6 +41,7 @@ func (ev *evalVisitor) VisitProgram(p *ast.Program) interface{} {
 	out := &bytes.Buffer{}
 	ev.blockParams.push(p.BlockParams)
 	for _, b := range p.Body {
+		ev.context = ev.context.New()
 		var value interface{}
 		value = b.Accept(ev)
 		switch vp := value.(type) {
