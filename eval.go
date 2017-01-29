@@ -12,6 +12,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+var helperContextKind = reflect.ValueOf(HelperContext{}).Kind().String()
+var mapKind = reflect.ValueOf(map[string]interface{}{}).Kind().String()
+
 type evalVisitor struct {
 	template    *Template
 	context     *Context
@@ -158,13 +161,16 @@ func (ev *evalVisitor) VisitPath(node *ast.PathExpression) interface{} {
 				rt := m.Type()
 				if rt.NumIn() > 0 {
 					last := rt.In(rt.NumIn() - 1)
-					if last.Name() == "HelperContext" {
+					switch last.Kind().String() {
+					case helperContextKind:
 						hargs := HelperContext{
 							Context:     ev.context,
 							Args:        []interface{}{},
 							evalVisitor: ev,
 						}
 						args = append(args, reflect.ValueOf(hargs))
+					case mapKind:
+						args = append(args, reflect.ValueOf(ev.context.Options()))
 					}
 					if len(args) > rt.NumIn() {
 						err := errors.Errorf("Incorrect number of arguments being passed to %s (%d for %d)", p, len(args), rt.NumIn())
