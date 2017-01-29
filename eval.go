@@ -147,10 +147,32 @@ func (ev *evalVisitor) VisitPath(node *ast.PathExpression) interface{} {
 	if len(node.Parts) > 1 {
 		for i := 1; i < len(node.Parts); i++ {
 			rv := reflect.ValueOf(v)
+			if rv.Kind() == reflect.Ptr {
+				rv = rv.Elem()
+			}
 			p := node.Parts[i]
 			m := rv.MethodByName(p)
 			if m.IsValid() {
-				vv := m.Call([]reflect.Value{})
+
+				args := []reflect.Value{}
+				rt := m.Type()
+				if rt.NumIn() > 0 {
+					last := rt.In(rt.NumIn() - 1)
+					if last.Name() == "HelperContext" {
+						hargs := HelperContext{
+							Context:     ev.context,
+							Args:        []interface{}{},
+							evalVisitor: ev,
+						}
+						args = append(args, reflect.ValueOf(hargs))
+					}
+					if len(args) > rt.NumIn() {
+						err := errors.Errorf("Incorrect number of arguments being passed to %s (%d for %d)", p, len(args), rt.NumIn())
+						return errors.WithStack(err)
+					}
+				}
+				vv := m.Call(args)
+
 				if len(vv) >= 1 {
 					v = vv[0].Interface()
 				}
@@ -167,9 +189,6 @@ func (ev *evalVisitor) VisitPath(node *ast.PathExpression) interface{} {
 					}
 				}
 				return errors.WithStack(errors.Errorf("could not find value for %s [line %d:%d]", node.Original, node.Line, node.Pos))
-			case reflect.Ptr:
-				f := rv.Elem().FieldByName(p)
-				v = f.Interface()
 			default:
 				f := rv.FieldByName(p)
 				v = f.Interface()
