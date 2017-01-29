@@ -105,10 +105,21 @@ func (ev *evalVisitor) VisitExpression(e *ast.Expression) interface{} {
 		if helper, ok := ev.template.Helpers.Helpers()[h]; ok {
 			return ev.evalHelper(e, helper)
 		}
-		if ev.context.Get(h) != nil {
+		if ev.context.Has(h) {
 			return ev.context.Get(h)
 		}
 		return errors.WithStack(errors.Errorf("could not find value for %s [line %d:%d]", h, e.Line, e.Pos))
+	}
+	parts := strings.Split(e.Canonical(), ".")
+	if len(parts) > 1 && ev.context.Has(parts[0]) {
+		rv := reflect.ValueOf(ev.context.Get(parts[0]))
+		if rv.Kind() == reflect.Ptr {
+			rv = rv.Elem()
+		}
+		m := rv.MethodByName(parts[1])
+		if m.IsValid() {
+			return ev.evalHelper(e, m.Interface())
+		}
 	}
 	if fp := e.FieldPath(); fp != nil {
 		return ev.VisitPath(fp)
@@ -152,58 +163,56 @@ func (ev *evalVisitor) VisitPath(node *ast.PathExpression) interface{} {
 		// 	return errors.WithStack(errors.Errorf("could not find value for %s [line %d:%d]", h, node.Line, node.Pos))
 	}
 
-	if len(node.Parts) > 1 {
-		for i := 1; i < len(node.Parts); i++ {
-			rv := reflect.ValueOf(v)
-			if rv.Kind() == reflect.Ptr {
-				rv = rv.Elem()
-			}
-			p := node.Parts[i]
-			m := rv.MethodByName(p)
-			if m.IsValid() {
+	for i := 1; i < len(node.Parts); i++ {
+		rv := reflect.ValueOf(v)
+		if rv.Kind() == reflect.Ptr {
+			rv = rv.Elem()
+		}
+		p := node.Parts[i]
+		m := rv.MethodByName(p)
+		if m.IsValid() {
 
-				args := []reflect.Value{}
-				rt := m.Type()
-				if rt.NumIn() > 0 {
-					last := rt.In(rt.NumIn() - 1)
-					switch last.Kind().String() {
-					case helperContextKind:
-						hargs := HelperContext{
-							Context:     ev.context,
-							Args:        []interface{}{},
-							evalVisitor: ev,
-						}
-						args = append(args, reflect.ValueOf(hargs))
-					case mapKind:
-						args = append(args, reflect.ValueOf(ev.context.Options()))
+			args := []reflect.Value{}
+			rt := m.Type()
+			if rt.NumIn() > 0 {
+				last := rt.In(rt.NumIn() - 1)
+				switch last.Kind().String() {
+				case helperContextKind:
+					hargs := HelperContext{
+						Context:     ev.context,
+						Args:        []interface{}{},
+						evalVisitor: ev,
 					}
-					if len(args) > rt.NumIn() {
-						err := errors.Errorf("Incorrect number of arguments being passed to %s (%d for %d)", p, len(args), rt.NumIn())
-						return errors.WithStack(err)
-					}
+					args = append(args, reflect.ValueOf(hargs))
+				case mapKind:
+					args = append(args, reflect.ValueOf(ev.context.Options()))
 				}
-				vv := m.Call(args)
+				if len(args) > rt.NumIn() {
+					err := errors.Errorf("Incorrect number of arguments being passed to %s (%d for %d)", p, len(args), rt.NumIn())
+					return errors.WithStack(err)
+				}
+			}
+			vv := m.Call(args)
 
-				if len(vv) >= 1 {
-					v = vv[0].Interface()
-				}
-				continue
+			if len(vv) >= 1 {
+				v = vv[0].Interface()
 			}
-			switch rv.Kind() {
-			case reflect.Map:
-				pv := reflect.ValueOf(p)
-				keys := rv.MapKeys()
-				for i := 0; i < len(keys); i++ {
-					k := keys[i]
-					if k.Interface() == pv.Interface() {
-						return rv.MapIndex(k).Interface()
-					}
+			continue
+		}
+		switch rv.Kind() {
+		case reflect.Map:
+			pv := reflect.ValueOf(p)
+			keys := rv.MapKeys()
+			for i := 0; i < len(keys); i++ {
+				k := keys[i]
+				if k.Interface() == pv.Interface() {
+					return rv.MapIndex(k).Interface()
 				}
-				return errors.WithStack(errors.Errorf("could not find value for %s [line %d:%d]", node.Original, node.Line, node.Pos))
-			default:
-				f := rv.FieldByName(p)
-				v = f.Interface()
 			}
+			return errors.WithStack(errors.Errorf("could not find value for %s [line %d:%d]", node.Original, node.Line, node.Pos))
+		default:
+			f := rv.FieldByName(p)
+			v = f.Interface()
 		}
 	}
 	return v
@@ -265,22 +274,32 @@ func (ev *evalVisitor) evalHelper(node *ast.Expression, helper interface{}) (ret
 	}
 
 	rv := reflect.ValueOf(helper)
-	args := []reflect.Value{}
-	for _, p := range node.Params {
-		v := p.Accept(ev)
-		vv := reflect.ValueOf(v)
-		hargs.Args = append(hargs.Args, v)
-		args = append(args, vv)
+	if rv.Kind() == reflect.Ptr {
+		rv = rv.Elem()
 	}
-
 	rt := rv.Type()
-	last := rt.In(rt.NumIn() - 1)
-	if last.Name() == "HelperContext" {
-		args = append(args, reflect.ValueOf(hargs))
-	}
-	if len(args) > rt.NumIn() {
-		err := errors.Errorf("Incorrect number of arguments being passed to %s (%d for %d)", node.Canonical(), len(args), rt.NumIn())
-		return errors.WithStack(err)
+
+	args := []reflect.Value{}
+
+	if rt.NumIn() > 0 {
+		for _, p := range node.Params {
+			v := p.Accept(ev)
+			vv := reflect.ValueOf(v)
+			hargs.Args = append(hargs.Args, v)
+			args = append(args, vv)
+		}
+
+		last := rt.In(rt.NumIn() - 1)
+		switch last.Kind().String() {
+		case helperContextKind:
+			args = append(args, reflect.ValueOf(hargs))
+		case mapKind:
+			args = append(args, reflect.ValueOf(ev.context.Options()))
+		}
+		if len(args) > rt.NumIn() {
+			err := errors.Errorf("Incorrect number of arguments being passed to %s (%d for %d)", node.Canonical(), len(args), rt.NumIn())
+			return errors.WithStack(err)
+		}
 	}
 	vv := rv.Call(args)
 
