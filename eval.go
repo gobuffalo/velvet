@@ -17,8 +17,7 @@ type HTMLer interface {
 	HTML() template.HTML
 }
 
-var helperContextKind = reflect.ValueOf(HelperContext{}).Kind().String()
-var mapKind = reflect.ValueOf(map[string]interface{}{}).Kind().String()
+var helperContextKind = "HelperContext"
 
 type evalVisitor struct {
 	template    *Template
@@ -177,15 +176,14 @@ func (ev *evalVisitor) VisitPath(node *ast.PathExpression) interface{} {
 			rt := m.Type()
 			if rt.NumIn() > 0 {
 				last := rt.In(rt.NumIn() - 1)
-				switch last.Kind().String() {
-				case helperContextKind:
+				if last.Name() == helperContextKind {
 					hargs := HelperContext{
 						Context:     ev.context,
 						Args:        []interface{}{},
 						evalVisitor: ev,
 					}
 					args = append(args, reflect.ValueOf(hargs))
-				case mapKind:
+				} else if last.Kind() == reflect.Map {
 					args = append(args, reflect.ValueOf(ev.context.Options()))
 				}
 				if len(args) > rt.NumIn() {
@@ -291,10 +289,9 @@ func (ev *evalVisitor) evalHelper(node *ast.Expression, helper interface{}) (ret
 		}
 
 		last := rt.In(rt.NumIn() - 1)
-		switch last.Kind().String() {
-		case helperContextKind:
+		if last.Name() == helperContextKind {
 			args = append(args, reflect.ValueOf(hargs))
-		case mapKind:
+		} else if last.Kind() == reflect.Map {
 			args = append(args, reflect.ValueOf(ev.context.Options()))
 		}
 		if len(args) > rt.NumIn() {
