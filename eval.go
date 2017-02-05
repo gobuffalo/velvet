@@ -17,6 +17,10 @@ type HTMLer interface {
 	HTML() template.HTML
 }
 
+type interfacer interface {
+	Interface() interface{}
+}
+
 var helperContextKind = "HelperContext"
 
 type evalVisitor struct {
@@ -58,6 +62,8 @@ func (ev *evalVisitor) VisitProgram(p *ast.Program) interface{} {
 			out.WriteString(strconv.Itoa(vp))
 		case fmt.Stringer:
 			out.WriteString(template.HTMLEscapeString(vp.String()))
+		case interfacer:
+			out.WriteString(template.HTMLEscaper(vp.Interface()))
 		case nil:
 		default:
 			return errors.WithStack(errors.Errorf("unsupport eval return format %T: %+v", value, value))
