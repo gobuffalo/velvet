@@ -104,6 +104,7 @@ func (h HelperContext) ElseBlockWith(ctx *Context) (string, error) {
 	}
 }
 
+// Helpers returns a HelperMap containing all of the known helpers
 func (h HelperContext) Helpers() *HelperMap {
 	return &h.evalVisitor.template.Helpers
 }
