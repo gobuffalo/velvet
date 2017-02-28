@@ -6,6 +6,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+// BuffaloRenderer implements the render.TemplateEngine interface allowing velvet to be used as a template engine
+// for Buffalo
 func BuffaloRenderer(input string, data map[string]interface{}, helpers map[string]interface{}) (string, error) {
 	t, err := Parse(input)
 	if err != nil {
