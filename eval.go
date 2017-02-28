@@ -112,7 +112,11 @@ func (ev *evalVisitor) VisitExpression(e *ast.Expression) interface{} {
 			return ev.evalHelper(e, helper)
 		}
 		if ev.context.Has(h) {
-			return ev.context.Get(h)
+			x := ev.context.Get(h)
+			if x != nil && h == "partial" {
+				return ev.evalHelper(e, x)
+			}
+			return x
 		}
 		return errors.WithStack(errors.Errorf("could not find value for %s [line %d:%d]", h, e.Line, e.Pos))
 	}
