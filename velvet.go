@@ -3,8 +3,18 @@ package velvet
 import (
 	"sync"
 
+	"github.com/gobuffalo/buffalo/render"
 	"github.com/pkg/errors"
 )
+
+func BuffaloRenderer(input string, options render.TemplateOptions) (string, error) {
+	t, err := Parse(input)
+	if err != nil {
+		return "", err
+	}
+	t.Helpers.AddMany(options.Helpers)
+	return t.Exec(NewContextWith(options.Data))
+}
 
 var cache = map[string]*Template{}
 var moot = &sync.Mutex{}
