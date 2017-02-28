@@ -7,6 +7,25 @@ type Context struct {
 	outer   *Context
 }
 
+func (c *Context) export() map[string]interface{} {
+	m := map[string]interface{}{}
+	if c.outer != nil {
+		for k, v := range c.outer.export() {
+			m[k] = v
+		}
+	}
+	for k, v := range c.data {
+		m[k] = v
+	}
+	if c.options != nil {
+		for k, v := range c.options {
+			m[k] = v
+		}
+	}
+
+	return m
+}
+
 // New context containing the current context. Values set on the new context
 // will not be set onto the original context, however, the original context's
 // values will be available to the new context.

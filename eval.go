@@ -302,7 +302,11 @@ func (ev *evalVisitor) evalHelper(node *ast.Expression, helper interface{}) (ret
 		if last.Name() == helperContextKind {
 			args = append(args, reflect.ValueOf(hargs))
 		} else if last.Kind() == reflect.Map {
-			args = append(args, reflect.ValueOf(ev.context.Options()))
+			if node.Canonical() == "partial" {
+				args = append(args, reflect.ValueOf(ev.context.export()))
+			} else {
+				args = append(args, reflect.ValueOf(ev.context.Options()))
+			}
 		}
 		if len(args) > rt.NumIn() {
 			err := errors.Errorf("Incorrect number of arguments being passed to %s (%d for %d)", node.Canonical(), len(args), rt.NumIn())
