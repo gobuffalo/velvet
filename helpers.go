@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/markbates/inflect"
 	"github.com/pkg/errors"
@@ -15,7 +16,9 @@ import (
 // Helpers contains all of the default helpers for velvet.
 // These will be available to all templates. You should add
 // any custom global helpers to this list.
-var Helpers = HelperMap{}
+var Helpers = HelperMap{
+	moot: &sync.Mutex{},
+}
 
 func init() {
 	Helpers.Add("if", ifHelper)

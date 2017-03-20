@@ -3,12 +3,14 @@ package velvet
 import (
 	"fmt"
 	"reflect"
+	"sync"
 
 	"github.com/pkg/errors"
 )
 
 // HelperMap holds onto helpers and validates they are properly formed.
 type HelperMap struct {
+	moot    *sync.Mutex
 	helpers map[string]interface{}
 }
 
@@ -16,6 +18,7 @@ type HelperMap struct {
 func NewHelperMap() (HelperMap, error) {
 	hm := HelperMap{
 		helpers: map[string]interface{}{},
+		moot:    &sync.Mutex{},
 	}
 
 	err := hm.AddMany(Helpers.Helpers())
@@ -34,6 +37,8 @@ func NewHelperMap() (HelperMap, error) {
 	func(...) (template.HTML, error) {}
 */
 func (h *HelperMap) Add(key string, helper interface{}) error {
+	h.moot.Lock()
+	defer h.moot.Unlock()
 	if h.helpers == nil {
 		h.helpers = map[string]interface{}{}
 	}
